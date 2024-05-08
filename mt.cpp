@@ -18,7 +18,11 @@ struct normsparam{
 void* normal(void* args){
     normsparam* idcon = static_cast<normsparam*>(args);
     int thread_num = idcon->tid;
-    while (!ready){};
+    while (!ready){
+        cout << "thread #" << thread_num << " waiting\n";
+        pthread_cond_wait(&cond, &mtx);
+    }
+
     while (active){
         pthread_mutex_lock(&mtx);
         cout << "thread #" << thread_num << " doing work\n";
@@ -62,9 +66,9 @@ int main(){
         tids[i].tid = i;
         pthread_create(&norm[i], NULL, normal, (void *)&tids[i]);
     }
-
     ready = true;
-
+    pthread_cond_signal(&cond);
+    cout << "signal sent" << endl;
     pthread_join(spec, NULL);
     for (int i = 0; i < (2); i++)
     {
